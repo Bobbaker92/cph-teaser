@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>CPH — Publicité Motion Design</title>
+<style>
+  :root{--navy:#0b304f;--gold:#f5b21a}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Poppins',system-ui,sans-serif;background:radial-gradient(circle at 50% 20%,#123653,#05101b 80%);
+    color:#eef3ff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:28px 16px 60px}
+  h1{font-weight:800;font-size:clamp(1.3rem,5vw,2rem);text-align:center;margin-bottom:6px}
+  h1 b{color:var(--gold)}
+  .sub{color:#9fb6c9;text-align:center;margin-bottom:26px;font-size:.95rem}
+  .card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);border-radius:18px;
+    padding:16px;margin-bottom:26px;width:100%;max-width:860px}
+  .card h2{font-size:1.05rem;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+  .tag{font-size:.7rem;font-weight:700;color:var(--navy);background:var(--gold);padding:3px 10px;border-radius:999px}
+  video{width:100%;border-radius:12px;background:#000;display:block}
+  .vert video{max-height:78vh;width:auto;margin:0 auto}
+  .dl{display:inline-flex;gap:8px;margin-top:12px;background:var(--gold);color:var(--navy);font-weight:800;
+    text-decoration:none;padding:.7rem 1.3rem;border-radius:999px}
+  .note{color:#8aa0b4;font-size:.82rem;margin-top:10px;line-height:1.5}
+</style>
+</head>
+<body>
+  <h1>Publicité <b>Contrôle Provence Habitat</b></h1>
+  <div class="sub">Motion Design — rendu MP4 (Remotion). Son inclus 🔊</div>
+
+  <div class="card">
+    <h2>🖥️ Format paysage 16:9 <span class="tag">1920×1080</span></h2>
+    <video src="cph-ad.mp4" controls playsinline preload="metadata"></video>
+    <a class="dl" href="cph-ad.mp4" download>⬇ Télécharger le MP4</a>
+  </div>
+
+  <div class="card vert" id="vcard">
+    <h2>📱 Format vertical 9:16 <span class="tag">1080×1920</span></h2>
+    <video src="cph-ad-vertical.mp4" controls playsinline preload="metadata"></video>
+    <a class="dl" href="cph-ad-vertical.mp4" download>⬇ Télécharger le MP4</a>
+    <div class="note">Si la vidéo verticale ne se lance pas encore, c'est qu'elle finit de se publier — recharge dans 2 min.</div>
+  </div>
+</body>
+</html>
