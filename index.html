@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Contrôle Provence Habitat — Couvreur RGE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+  :root{--navy:#0b304f;--navy2:#071f34;--gold:#f5b21a;--cream:#f4efe6;--white:#fff}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden;background:var(--navy2);color:var(--white);
+    font-family:'Poppins',system-ui,sans-serif;-webkit-font-smoothing:antialiased;touch-action:none}
+  #stage{position:fixed;inset:0;overflow:hidden}
+
+  /* PHOTOS plein cadre (travelling Ken Burns) */
+  .shots{position:absolute;inset:0;z-index:0}
+  .shot{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;will-change:transform,opacity}
+  .shot::after{content:"";position:absolute;inset:0;
+    background:linear-gradient(180deg,rgba(7,31,52,.55) 0%,rgba(7,31,52,.2) 40%,rgba(7,31,52,.75) 100%)}
+  #sh1{background-image:url(img/hero1.webp)}
+  #sh2{background-image:url(img/roof2.webp)}
+  #sh3{background-image:url(img/team.webp);background-position:center 30%}
+  #sh4{background-image:url(img/solar.webp)}
+
+  /* voile navy pour les scènes texte sans photo */
+  .navyveil{position:absolute;inset:0;z-index:1;opacity:0;
+    background:radial-gradient(circle at 50% 35%,#114064,#071f34 75%)}
+
+  canvas{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none}
+
+  .goldglow{position:absolute;inset:0;z-index:3;pointer-events:none;mix-blend-mode:screen;opacity:0;
+    background:radial-gradient(circle at 50% 46%,rgba(245,178,26,.5),transparent 55%)}
+
+  .scene{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;text-align:center;padding:8vw;opacity:0;
+    pointer-events:none;will-change:transform,opacity}
+
+  .kick{font-family:'Poppins';font-weight:600;letter-spacing:.34em;text-transform:uppercase;
+    font-size:clamp(.6rem,1.7vw,.92rem);color:var(--gold)}
+  .goldline{height:3px;width:0;background:var(--gold);margin:1.1rem auto;border-radius:2px;box-shadow:0 0 18px rgba(245,178,26,.7)}
+
+  .logo{width:clamp(180px,42vw,340px);filter:drop-shadow(0 20px 50px rgba(0,0,0,.5))}
+  .entity{font-family:'Poppins';font-weight:700;letter-spacing:.06em;font-size:clamp(.85rem,2.5vw,1.2rem);color:var(--cream)}
+
+  .big{font-family:'Poppins';font-weight:800;letter-spacing:-.01em;line-height:1.04;
+    font-size:clamp(1.9rem,6.6vw,4.6rem);text-shadow:0 6px 30px rgba(0,0,0,.6)}
+  .big .w{display:inline-block;will-change:transform,opacity;white-space:nowrap}
+  .gold{color:var(--gold)}
+  .serif{font-family:'Fraunces',serif;font-weight:600;font-style:italic}
+  .sub{margin-top:1rem;font-size:clamp(.95rem,2.6vw,1.35rem);color:var(--cream);max-width:24ch;line-height:1.5;
+    text-shadow:0 2px 14px rgba(0,0,0,.6)}
+
+  /* services qui défilent */
+  .svc{display:flex;flex-direction:column;gap:.55rem;align-items:center}
+  .svc .s{font-family:'Poppins';font-weight:800;font-size:clamp(1.8rem,8vw,5rem);line-height:1;opacity:0;
+    will-change:transform,opacity;text-transform:uppercase;letter-spacing:-.01em}
+  .svc .s.on{color:var(--gold)}
+
+  /* badge RGE */
+  .rgewrap{display:flex;flex-direction:column;align-items:center;gap:1.4rem}
+  .rge{width:clamp(120px,26vw,190px);opacity:0;will-change:transform,opacity;
+    filter:drop-shadow(0 16px 40px rgba(0,0,0,.5))}
+  .certtxt{font-family:'Poppins';font-weight:800;font-size:clamp(1.4rem,5.2vw,3rem);line-height:1.1}
+
+  /* bande confiance */
+  .trust{display:flex;flex-wrap:wrap;gap:clamp(1rem,4vw,3rem);justify-content:center;max-width:60rem}
+  .ti{display:flex;flex-direction:column;align-items:center;gap:.6rem;opacity:0;will-change:transform,opacity;min-width:150px}
+  .ti .ic{width:clamp(50px,11vw,74px);height:clamp(50px,11vw,74px);border-radius:50%;display:grid;place-items:center;
+    border:2px solid var(--gold);background:rgba(245,178,26,.1)}
+  .ti .ic svg{width:48%;height:48%;stroke:var(--gold);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+  .ti b{font-family:'Poppins';font-weight:700;font-size:clamp(1rem,3vw,1.45rem)}
+  .ti small{color:var(--cream);font-size:clamp(.78rem,2vw,.98rem)}
+
+  /* CTA */
+  .cta{font-family:'Poppins';font-weight:900;font-size:clamp(2rem,7.4vw,5rem);line-height:1.05;letter-spacing:-.01em}
+  .pill{margin-top:1.6rem;display:inline-flex;align-items:center;gap:.6rem;background:var(--gold);color:var(--navy);
+    font-family:'Poppins';font-weight:800;font-size:clamp(1.2rem,4.6vw,2rem);padding:.75rem 1.8rem;border-radius:999px;
+    box-shadow:0 18px 44px rgba(245,178,26,.4)}
+  .meta{margin-top:1.3rem;color:var(--cream);font-size:clamp(.9rem,2.5vw,1.15rem);line-height:1.7}
+  .meta b{color:var(--white)}
+
+  .bug{position:absolute;top:18px;left:20px;z-index:6;display:flex;align-items:center;gap:.5rem;opacity:0}
+  .bug img{height:34px}
+
+  .overlay{position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:1.6rem;text-align:center;padding:8vw;background:radial-gradient(circle at 50% 40%,#114064,#061a2c 80%)}
+  .overlay .logo{width:clamp(200px,50vw,360px)}
+  .btn{cursor:pointer;border:none;font-family:'Poppins';font-weight:800;font-size:clamp(1rem,3.4vw,1.25rem);
+    padding:1rem 2.3rem;border-radius:999px;background:var(--gold);color:var(--navy);
+    box-shadow:0 18px 50px rgba(245,178,26,.45);transition:transform .2s}
+  .btn:active{transform:scale(.97)} .btn:hover{transform:translateY(-2px) scale(1.03)}
+  .btn .p{display:inline-block;margin-right:.5rem;animation:pulse 1.3s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  .hint{color:#9fb6c9;font-size:.85rem;max-width:24ch}
+  .replay{position:absolute;inset:0;z-index:22;display:none;align-items:center;justify-content:center;background:rgba(6,26,44,.5)}
+  .skip{position:absolute;bottom:16px;right:18px;z-index:21;color:#86a0b4;font-size:.78rem;cursor:pointer;
+    background:rgba(255,255,255,.08);padding:.4rem .9rem;border-radius:999px;border:1px solid rgba(255,255,255,.12);display:none}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="shots">
+    <div class="shot" id="sh1"></div>
+    <div class="shot" id="sh2"></div>
+    <div class="shot" id="sh3"></div>
+    <div class="shot" id="sh4"></div>
+  </div>
+  <div class="navyveil" id="veil"></div>
+  <canvas id="fx"></canvas>
+  <div class="goldglow" id="glow"></div>
+
+  <div class="bug" id="bug"><img src="img/logo.png" alt="CPH"></div>
+
+  <!-- S1 : intro logo -->
+  <section class="scene" id="s1">
+    <div class="kick" id="s1k" style="opacity:0">Couvreur certifié RGE · Provence</div>
+    <img class="logo" id="s1logo" src="img/logo.png" alt="Contrôle Provence Habitat" style="opacity:0">
+    <div class="goldline" id="s1line"></div>
+  </section>
+
+  <!-- S2 : headline sur photo toiture -->
+  <section class="scene" id="s2">
+    <div class="big"><span class="w">Votre</span> <span class="w">toiture,</span></div>
+    <div class="big" style="margin-top:.3rem"><span class="w gold">entre</span> <span class="w gold">de</span> <span class="w gold">bonnes</span> <span class="w gold">mains.</span></div>
+    <div class="sub">Couverture · Toiture · Zinguerie — un chantier maîtrisé, du diagnostic au contrôle final.</div>
+  </section>
+
+  <!-- S3 : services -->
+  <section class="scene" id="s3">
+    <div class="kick" style="margin-bottom:1.6rem">Nos métiers</div>
+    <div class="svc">
+      <div class="s">Couverture</div>
+      <div class="s on">Toiture · Zinguerie</div>
+      <div class="s">Isolation · Démoussage</div>
+    </div>
+  </section>
+
+  <!-- S4 : savoir-faire provençal sur photo tuiles -->
+  <section class="scene" id="s4">
+    <div class="big"><span class="serif gold">Un savoir-faire</span></div>
+    <div class="big"><span class="serif">provençal.</span></div>
+    <div class="sub">Tuile, zinc, étanchéité — on protège et on valorise votre toit, partout dans les Bouches-du-Rhône.</div>
+  </section>
+
+  <!-- S5 : RGE sur photo équipe -->
+  <section class="scene" id="s5">
+    <div class="rgewrap">
+      <img class="rge" id="rge" src="img/rge.png" alt="RGE Qualibat">
+      <div class="certtxt">Artisan certifié <span class="gold">RGE Qualibat</span></div>
+    </div>
+  </section>
+
+  <!-- S6 : confiance -->
+  <section class="scene" id="s6">
+    <div class="kick" style="margin-bottom:2rem">Pourquoi nous</div>
+    <div class="trust">
+      <div class="ti"><div class="ic"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13l2 2 4-4"/></svg></div><b>Devis gratuit</b><small>Sans engagement</small></div>
+      <div class="ti"><div class="ic"><svg viewBox="0 0 24 24"><path d="M13 2L4.5 13H11l-1 9 9-12H12l1-8z"/></svg></div><b>Intervention rapide</b><small>Fuites &amp; sinistres</small></div>
+      <div class="ti"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></div><b>Travail garanti</b><small>Soigné &amp; durable</small></div>
+    </div>
+  </section>
+
+  <!-- S7 : CTA -->
+  <section class="scene" id="s7">
+    <div class="cta">Demandez votre<br><span class="gold">devis gratuit.</span></div>
+    <div class="pill" id="pill">📞 06 64 52 51 91</div>
+    <div class="meta"><b>contact@cph13.fr</b> · Bouches-du-Rhône (13)<br>Contrôle Provence Habitat — couvreur RGE Qualibat</div>
+  </section>
+
+  <div class="overlay" id="overlay">
+    <img class="logo" src="img/logo.png" alt="CPH">
+    <button class="btn" id="startBtn"><span class="p">▶</span> Lancer la présentation</button>
+    <div class="hint">🔊 Monte le son — appuie pour démarrer</div>
+  </div>
+  <div class="replay" id="replayWrap"><button class="btn" id="replayBtn"><span class="p">↺</span> Revoir</button></div>
+  <div class="skip" id="skip">passer ⏭</div>
+</div>
+
+<script>
+/*──────── état réactif (subtil) ────────*/
+const S={beat:0};
+/*──────── canvas : poussière dorée + léger grain ────────*/
+const fx=document.getElementById('fx'),cx=fx.getContext('2d');
+let W,H,DPR,mot=[];
+function resize(){DPR=Math.min(devicePixelRatio||1,2);fx.width=innerWidth*DPR;fx.height=innerHeight*DPR;
+  fx.style.width=innerWidth+'px';fx.style.height=innerHeight+'px';W=fx.width;H=fx.height;
+  mot=Array.from({length:Math.min(70,innerWidth/14|0)},()=>({x:Math.random()*W,y:Math.random()*H,
+    r:Math.random()*1.6+.4,s:Math.random()*.3+.05,o:Math.random()*.5+.2}));}
+function draw(){S.beat*=.9;cx.clearRect(0,0,W,H);
+  for(const p of mot){p.y-=p.s*DPR;p.x+=Math.sin(p.y*.01)*.3;if(p.y<0){p.y=H;p.x=Math.random()*W;}
+    cx.fillStyle=`rgba(245,178,26,${p.o*(.5+S.beat*.5)})`;
+    cx.beginPath();cx.arc(p.x,p.y,p.r*DPR*(1+S.beat*.4),0,7);cx.fill();}
+  requestAnimationFrame(draw);}
+resize();addEventListener('resize',resize);draw();
+
+/*──────── MUSIQUE cinématique (Web Audio) ────────*/
+let AC,master,comp,delay,step=0,nextT=0,timer;
+const TEMPO=100,SPB=60/TEMPO,STEP=SPB/4,BAR=SPB*4; // 2.4s/bar
+// I–V–vi–IV en Do : C G Am F
+const CH=[
+  {root:65.41, tri:[261.63,329.63,392.00]}, // C
+  {root:49.00, tri:[246.94,293.66,392.00]}, // G
+  {root:55.00, tri:[220.00,261.63,329.63]}, // Am
+  {root:43.65, tri:[174.61,220.00,261.63]}, // F
+];
+function initAudio(){AC=new(AudioContext||webkitAudioContext)();
+  master=AC.createGain();master.gain.value=.9;
+  comp=AC.createDynamicsCompressor();comp.threshold.value=-16;comp.ratio.value=3;
+  master.connect(comp);comp.connect(AC.destination);
+  delay=AC.createDelay();delay.delayTime.value=SPB*.75;const fb=AC.createGain();fb.gain.value=.3;
+  const w=AC.createGain();w.gain.value=.35;delay.connect(fb);fb.connect(delay);delay.connect(w);w.connect(master);window._d=delay;}
+function env(g,t,a,p,d){g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(p,t+a);g.gain.exponentialRampToValueAtTime(.0001,t+a+d);}
+function nz(len){const n=AC.createBufferSource(),b=AC.createBuffer(1,AC.sampleRate*len,AC.sampleRate),d=b.getChannelData(0);
+  for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;n.buffer=b;return n;}
+function kick(t){const o=AC.createOscillator(),g=AC.createGain();o.type='sine';
+  o.frequency.setValueAtTime(130,t);o.frequency.exponentialRampToValueAtTime(45,t+.1);
+  g.gain.setValueAtTime(.9,t);g.gain.exponentialRampToValueAtTime(.0001,t+.3);
+  o.connect(g);g.connect(master);o.start(t);o.stop(t+.32);S.beat=1;}
+function sub(t,f){const o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.value=f;
+  env(g,t,.02,.5,.5);o.connect(g);g.connect(master);o.start(t);o.stop(t+.6);}
+function shake(t){const b=nz(.05),hp=AC.createBiquadFilter();hp.type='highpass';hp.frequency.value=7000;
+  const g=AC.createGain();env(g,t,.002,.08,.04);b.connect(hp);hp.connect(g);g.connect(master);b.start(t);}
+function pluck(t,f,v){const o=AC.createOscillator(),o2=AC.createOscillator(),g=AC.createGain(),fl=AC.createBiquadFilter();
+  o.type='triangle';o2.type='sine';o.frequency.value=f;o2.frequency.value=f*2;
+  fl.type='lowpass';fl.frequency.value=2800;env(g,t,.005,(v||.16),.5);
+  o.connect(fl);o2.connect(fl);fl.connect(g);g.connect(master);g.connect(window._d);o.start(t);o2.start(t);o.stop(t+.6);o2.stop(t+.6);}
+let pad=[];
+function setPad(c,t){pad.forEach(o=>{try{o.stop(t+.2)}catch(e){}});pad=[];
+  const fl=AC.createBiquadFilter();fl.type='lowpass';fl.frequency.value=1100;
+  const g=AC.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.14,t+.5);fl.connect(g);g.connect(master);
+  c.tri.forEach((f,i)=>{const o=AC.createOscillator();o.type=i===0?'sine':'triangle';o.frequency.value=f;
+    const d=AC.createOscillator(),dg=AC.createGain();d.frequency.value=.07+i*.02;dg.gain.value=1.4;d.connect(dg);dg.connect(o.detune);d.start(t);
+    o.connect(fl);o.start(t);pad.push(o);});}
+function swell(t,dur){const b=nz(dur),bp=AC.createBiquadFilter();bp.type='bandpass';bp.Q.value=1.2;
+  bp.frequency.setValueAtTime(300,t);bp.frequency.exponentialRampToValueAtTime(5000,t+dur);
+  const g=AC.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.22,t+dur*.92);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  b.connect(bp);bp.connect(g);g.connect(master);b.start(t);}
+function bigchord(t){const c=CH[0];[c.tri[0],c.tri[1],c.tri[2],c.tri[2]*1.5].forEach((f,i)=>{
+  const o=AC.createOscillator();o.type='triangle';o.frequency.value=f;const g=AC.createGain();
+  g.gain.setValueAtTime(.0001,t+i*.04);g.gain.exponentialRampToValueAtTime(.26,t+i*.04+.05);g.gain.setTargetAtTime(.0001,t+1.4,.9);
+  o.connect(g);g.connect(master);g.connect(window._d);o.start(t+i*.04);o.stop(t+3.2);});}
+const ARP=[0,1,2,1,0,2,1,2];
+function schedule(s,t){const bar=(s/16)|0,ib=s%16,c=CH[bar%4];
+  if(ib===0)setPad(c,t);
+  const sect=bar<2?'intro':bar<12?'main':'out';
+  if(bar===0&&ib===0)swell(t,BAR*1.6);
+  if(sect!=='out'&&ib%4===0)pluck(t,c.tri[ARP[(s/4|0)%ARP.length]],ib===0?.2:.14);
+  if(sect==='main'){
+    if([0,4,8,12].includes(ib))kick(t);
+    if([0,8].includes(ib))sub(t,c.root*2);
+    if(ib%2===1)shake(t);
+    if(ib%4===2)pluck(t,c.tri[ARP[(s/2|0)%ARP.length]]*2,.1);
+  }
+  if(bar===11&&ib>=8)swell(t,STEP*8); // montée vers le CTA
+}
+function loop(){while(nextT<AC.currentTime+.12){schedule(step,nextT);nextT+=STEP;step++;if(step>=16*15){stop();return;}}timer=setTimeout(loop,25);}
+function startMusic(){initAudio();step=0;nextT=AC.currentTime+.1;loop();}
+function stop(){clearTimeout(timer);if(master)master.gain.setTargetAtTime(.0001,AC.currentTime,.7);}
+
+/*──────── TIMELINE ────────*/
+const B=BAR;let tl;
+function kenBurns(sel,fromScale,toScale,fromX,toX,dur){
+  gsap.fromTo(sel,{scale:fromScale,xPercent:fromX,yPercent:0},{scale:toScale,xPercent:toX,duration:dur,ease:'none'});}
+function reset(){gsap.set('.scene',{opacity:0,y:0,filter:'blur(0px)'});
+  gsap.set('.shot',{opacity:0,scale:1.1});gsap.set('#veil',{opacity:0});
+  gsap.set('.big .w',{opacity:0,yPercent:120});gsap.set('.svc .s',{opacity:0,x:-40});
+  gsap.set('#rge',{opacity:0,scale:.5});gsap.set('.ti',{opacity:0,y:40});
+  gsap.set('#s1logo,#s1k',{opacity:0});gsap.set('#s1line',{width:0});
+  gsap.set('#s7 .pill,#s7 .meta,#s7 .cta',{opacity:0});}
+function glow(v){gsap.fromTo('#glow',{opacity:v||.5},{opacity:0,duration:.8,ease:'power2.out'});}
+function words(sel,at,st){gsap.to(sel,{opacity:1,yPercent:0,duration:.6,stagger:st||.07,ease:'power3.out'},at);}
+
+function build(){
+  reset();
+  tl=gsap.timeline({onComplete:()=>document.getElementById('replayWrap').style.display='flex'});
+
+  // S1 — intro logo (bars 0-1)
+  tl.to('#veil',{opacity:1,duration:.6},0)
+    .to('#s1',{opacity:1,duration:.3},0)
+    .call(()=>glow(.6),null,.3)
+    .fromTo('#s1logo',{opacity:0,scale:.8,y:10},{opacity:1,scale:1,y:0,duration:1,ease:'power3.out'},.2)
+    .to('#s1k',{opacity:1,duration:.7},1.0)
+    .to('#s1line',{width:'min(220px,40vw)',duration:.7,ease:'power2.out'},1.1)
+    .to('#bug',{opacity:1,duration:.6},B*1.6)
+    .to('#s1',{opacity:0,duration:.5},B*2-.2).to('#veil',{opacity:0,duration:.5},B*2-.2);
+
+  // S2 — photo toiture (bars 2-3)
+  tl.to('#sh1',{opacity:1,duration:.8},B*2).call(()=>kenBurns('#sh1',1.18,1.02,-3,2,B*2.2),null,B*2)
+    .set('#s2',{opacity:1},B*2.1)
+    .add(()=>words('#s2 .big:first-child .w',0,.06),B*2.3)
+    .add(()=>words('#s2 .big:last-child .w',0,.05),B*2.7)
+    .fromTo('#s2 .sub',{opacity:0,y:16},{opacity:1,y:0,duration:.7},B*3.1)
+    .to('#s2',{opacity:0,duration:.5},B*4-.2).to('#sh1',{opacity:0,duration:.6},B*4-.1);
+
+  // S3 — services (bars 4-5) sur voile navy
+  tl.to('#veil',{opacity:1,duration:.5},B*4-.1)
+    .set('#s3',{opacity:1},B*4)
+    .to('#s3 .svc .s',{opacity:1,x:0,duration:.5,stagger:B/2.2,ease:'power3.out'},B*4.1)
+    .to('#s3',{opacity:0,duration:.5},B*6-.2);
+
+  // S4 — savoir-faire provençal (bars 6-7)
+  tl.to('#veil',{opacity:0,duration:.5},B*6-.1)
+    .to('#sh2',{opacity:1,duration:.8},B*6).call(()=>kenBurns('#sh2',1.16,1.0,3,-2,B*2.2),null,B*6)
+    .set('#s4',{opacity:1},B*6.1)
+    .fromTo('#s4 .big:first-child',{opacity:0,y:30},{opacity:1,y:0,duration:.7,ease:'power3.out'},B*6.3)
+    .fromTo('#s4 .big:last-child',{opacity:0,y:30},{opacity:1,y:0,duration:.7,ease:'power3.out'},B*6.6)
+    .fromTo('#s4 .sub',{opacity:0,y:16},{opacity:1,y:0,duration:.7},B*7.0)
+    .to('#s4',{opacity:0,duration:.5},B*8-.2).to('#sh2',{opacity:0,duration:.6},B*8-.1);
+
+  // S5 — RGE (bars 8-9) sur photo équipe
+  tl.to('#sh3',{opacity:1,duration:.8},B*8).call(()=>kenBurns('#sh3',1.14,1.0,-2,2,B*2.2),null,B*8)
+    .set('#s5',{opacity:1},B*8.1)
+    .call(()=>glow(.5),null,B*8.4)
+    .to('#rge',{opacity:1,scale:1,duration:.7,ease:'back.out(1.8)'},B*8.4)
+    .fromTo('#s5 .certtxt',{opacity:0,y:20},{opacity:1,y:0,duration:.7},B*8.8)
+    .to('#s5',{opacity:0,duration:.5},B*10-.2).to('#sh3',{opacity:0,duration:.6},B*10-.1);
+
+  // S6 — confiance (bars 10-11)
+  tl.to('#veil',{opacity:1,duration:.5},B*10-.1)
+    .set('#s6',{opacity:1},B*10)
+    .to('#s6 .ti',{opacity:1,y:0,duration:.6,stagger:B/2.5,ease:'back.out(1.6)'},B*10.2)
+    .to('#s6',{opacity:0,duration:.5},B*12-.2);
+
+  // S7 — CTA (bars 12-15)
+  tl.to('#veil',{opacity:0,duration:.5},B*12-.1)
+    .to('#sh4',{opacity:1,duration:.8},B*12).call(()=>kenBurns('#sh4',1.12,1.0,2,-1,B*3),null,B*12)
+    .to('#veil',{opacity:.55,duration:.6},B*12)
+    .set('#s7',{opacity:1},B*12.1)
+    .call(()=>{glow(.8);if(AC)bigchord(AC.currentTime);},null,B*12.2)
+    .fromTo('#s7 .cta',{opacity:0,scale:.8,y:20},{opacity:1,scale:1,y:0,duration:.8,ease:'back.out(1.6)'},B*12.2)
+    .fromTo('#s7 .pill',{opacity:0,y:20},{opacity:1,y:0,duration:.6,ease:'back.out(1.8)'},B*12.9)
+    .fromTo('#s7 .meta',{opacity:0,y:16},{opacity:1,y:0,duration:.7},B*13.3)
+    .to('#sh4',{scale:1.06,duration:B*2,ease:'sine.inOut'},B*13);
+}
+
+/*──────── contrôles ────────*/
+let on=false;
+function launch(){if(on)return;on=true;try{startMusic();}catch(e){}
+  document.getElementById('overlay').style.display='none';document.getElementById('skip').style.display='block';build();}
+function replay(){document.getElementById('replayWrap').style.display='none';try{startMusic();}catch(e){}build();}
+document.getElementById('startBtn').onclick=launch;
+document.getElementById('replayBtn').onclick=replay;
+document.getElementById('skip').onclick=()=>{if(tl)tl.progress(.999);stop();};
+reset();
+</script>
+</body>
+</html>
