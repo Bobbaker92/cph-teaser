@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>CPH — De Google à votre toit (vertical)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Arial&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+  :root{--navy:#0b304f;--gold:#f5b21a;--cream:#f4efe6}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden;background:#05101b;
+    font-family:'Poppins',system-ui,sans-serif;-webkit-font-smoothing:antialiased;touch-action:none}
+  #stage{position:fixed;inset:0;display:grid;place-items:center;
+    background:radial-gradient(circle at 50% 25%,#123653,#05101b 75%)}
+
+  /* téléphone 9:16 */
+  .phone{position:relative;height:min(96vh,880px);aspect-ratio:9/16;background:#000;border-radius:38px;
+    padding:10px;box-shadow:0 30px 90px rgba(0,0,0,.6),0 0 0 2px #1c2733;opacity:0}
+  .screen{position:absolute;inset:10px;border-radius:30px;overflow:hidden;background:#fff}
+
+  /* barre d'état */
+  .status{position:absolute;top:0;left:0;right:0;height:34px;z-index:30;display:flex;align-items:center;
+    justify-content:space-between;padding:0 22px;font-size:13px;font-weight:600;color:#202124;font-family:Arial}
+  .status.dark{color:#fff}
+  .status .r{display:flex;gap:6px;align-items:center}
+  .status svg{width:16px;height:12px}
+
+  /* chrome mobile */
+  .mchrome{position:absolute;top:34px;left:0;right:0;height:42px;z-index:20;background:#f1f3f4;display:flex;align-items:center;
+    gap:8px;padding:0 12px}
+  .maddr{flex:1;height:30px;background:#fff;border-radius:999px;display:flex;align-items:center;gap:8px;padding:0 12px;
+    font-size:12px;color:#3c4043;font-family:Arial;border:1px solid #e1e3e6}
+  .maddr svg{width:12px;height:12px;flex:none}
+  .maddr .u{white-space:nowrap;overflow:hidden}
+
+  .pageholder{position:absolute;top:76px;left:0;right:0;bottom:0;overflow:hidden;background:#fff}
+  .page{position:absolute;inset:0;opacity:0}
+  .loadbar{position:absolute;top:76px;left:0;height:3px;width:0;background:var(--gold);z-index:25;box-shadow:0 0 8px var(--gold)}
+
+  /* HOOK */
+  .hook{position:absolute;inset:0;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:1.2rem;text-align:center;padding:10vw;background:radial-gradient(circle at 50% 40%,#123653,#05101b 78%);opacity:0}
+  .hook h2{color:#fff;font-weight:800;font-size:clamp(1.5rem,6vw,2.4rem);line-height:1.2}
+  .hook .em{font-size:3rem}
+  .hook .gold{color:var(--gold)}
+
+  /* GOOGLE HOME mobile */
+  .ghome{display:flex;flex-direction:column;align-items:center;background:#fff;font-family:Arial;padding-top:16%}
+  .glogo{font-size:clamp(34px,10vw,52px);font-weight:500;letter-spacing:-2px;margin-bottom:26px}
+  .glogo .b{color:#4285F4}.glogo .r{color:#EA4335}.glogo .y{color:#FBBC05}.glogo .g{color:#34A853}
+  .gpill{width:86%;height:48px;border:1px solid #dfe1e5;border-radius:999px;display:flex;align-items:center;padding:0 16px;gap:12px;
+    box-shadow:0 1px 6px rgba(32,33,36,.12);position:relative}
+  .gpill .mag{width:20px;height:20px;color:#9aa0a6;flex:none}
+  .gq{font-size:16px;color:#202124;white-space:nowrap;overflow:hidden;flex:1}
+  .caret{display:inline-block;width:2px;height:20px;background:#4285F4;vertical-align:middle;animation:bl 1s step-end infinite}
+  @keyframes bl{50%{opacity:0}}
+  .gpill .mic{width:20px;height:20px;flex:none}
+  .suggests{position:absolute;top:86px;left:5%;right:5%;background:#fff;border-radius:20px;border:1px solid #e8eaed;
+    box-shadow:0 6px 18px rgba(32,33,36,.2);overflow:hidden;opacity:0;z-index:5}
+  .sug{display:flex;align-items:center;gap:12px;padding:11px 16px;font-size:15px;color:#202124}
+  .sug:first-child{background:#f1f3f4;font-weight:600}
+  .sug svg{width:15px;height:15px;color:#9aa0a6;flex:none}
+
+  /* clavier mobile */
+  .kbd{position:absolute;left:0;right:0;bottom:0;z-index:35;background:#d1d5db;padding:8px 5px 20px;transform:translateY(110%);
+    font-family:Arial;user-select:none}
+  .krow{display:flex;justify-content:center;gap:5px;margin:4px 2px}
+  .k{flex:1;max-width:34px;height:40px;background:#fff;border-radius:6px;display:grid;place-items:center;font-size:16px;
+    color:#111;box-shadow:0 1px 0 rgba(0,0,0,.25);text-transform:lowercase}
+  .k.press{background:var(--gold);color:#fff;transform:translateY(1px)}
+  .kspace{flex:4;max-width:none}
+  .kbtn{background:#aab1bd}
+
+  /* SERP mobile */
+  .serp{background:#fff;font-family:Arial;overflow:hidden}
+  .serpScroll{position:absolute;left:0;right:0;top:0;will-change:transform}
+  .sbar{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #ececec}
+  .sbar .back{font-size:20px;color:#5f6368}
+  .sbar .q{flex:1;height:38px;border:1px solid #dfe1e5;border-radius:999px;display:flex;align-items:center;padding:0 14px;gap:8px;font-size:14px;color:#202124}
+  .sbar .q .mag{width:15px;height:15px;color:#4285F4}
+  .stabs{display:flex;gap:18px;font-size:13px;color:#5f6368;padding:10px 16px}
+  .stabs .on{color:#1a73e8;font-weight:600}
+  .spons{font-size:11px;color:#5f6368;padding:4px 16px}
+
+  .mapstrip{height:120px;margin:4px 14px 10px;border-radius:12px;overflow:hidden;position:relative;
+    background:linear-gradient(135deg,#e6efe3,#cfe3d6);background-color:#d9e8dc}
+  .mapstrip::before{content:"";position:absolute;inset:0;background:
+    repeating-linear-gradient(0deg,rgba(255,255,255,.55) 0 1px,transparent 1px 30px),
+    repeating-linear-gradient(90deg,rgba(255,255,255,.55) 0 1px,transparent 1px 30px);opacity:.6}
+  .mapstrip .road{position:absolute;height:6px;background:#fff;left:-10%;right:-10%;top:55%;transform:rotate(-7deg);box-shadow:0 16px 0 #fff}
+  .pin{position:absolute;width:26px;height:26px;color:#EA4335;filter:drop-shadow(0 3px 3px rgba(0,0,0,.3));transform:translate(-50%,-100%)}
+  .pin.cph{color:var(--gold);width:36px;height:36px;left:50%;top:48%}
+  .loc{margin:0 14px 10px;padding:14px;border:1px solid #e3e6e8;border-radius:12px;position:relative;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  .loc.cph{background:#fffaf0;border-color:#f0dca8}
+  .loc .nm{font-size:17px;color:#202124;font-weight:700}
+  .loc .cat{font-size:13px;color:#5f6368;margin:3px 0}
+  .loc .atouts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .loc .tag{font-size:11px;font-weight:700;padding:3px 9px;border-radius:7px}
+  .tag.g{color:#0b7a3b;background:#e6f4ea}.tag.b{color:#0b3d91;background:#e8f0fe}.tag.o{color:#8a5a00;background:#fdf1dc}
+  .loc .addr{font-size:12px;color:#5f6368;margin-top:8px;display:flex;align-items:center;gap:6px}
+  .loc .addr svg{width:13px;height:13px;color:#EA4335}
+  .organic{margin:16px 16px 40px}
+  .organic .fav{display:flex;align-items:center;gap:9px;margin-bottom:3px}
+  .organic .ic{width:26px;height:26px;border-radius:50%;background:var(--navy);display:grid;place-items:center;color:#fff;font-weight:800;font-size:10px}
+  .organic .u{font-size:12px;color:#5f6368}.organic .st{font-size:13px;color:#202124}
+  .organic h3{color:#1a0dab;font-size:19px;font-weight:400;margin:3px 0 4px}
+  .organic p{color:#4d5156;font-size:13px;line-height:1.5}
+
+  /* SITE mobile */
+  .site{background:var(--navy);overflow:hidden}
+  .siteScroll{position:absolute;left:0;right:0;top:0;will-change:transform}
+  .s-hero{height:560px;position:relative;background:url(img/hero1.webp) center/cover}
+  .s-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,24,40,.55),rgba(7,24,40,.35) 40%,var(--navy))}
+  .s-nav{position:relative;z-index:3;display:flex;align-items:center;padding:16px 18px}
+  .s-nav img{height:38px}.s-nav .ph{margin-left:auto;color:#fff;font-weight:700;font-size:13px;background:rgba(255,255,255,.14);padding:6px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.22)}
+  .s-herotext{position:absolute;z-index:3;left:20px;right:20px;top:200px}
+  .s-kick{color:var(--gold);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:.72rem;opacity:0}
+  .s-hero h1{color:#fff;font-weight:800;line-height:1.08;font-size:2rem;margin:.5rem 0;opacity:0}
+  .s-hero h1 .gold{color:var(--gold)}
+  .s-p{color:var(--cream);font-size:.95rem;line-height:1.5;opacity:0}
+  .s-cta{margin-top:1.1rem;display:flex;gap:.6rem;flex-wrap:wrap;opacity:0}
+  .s-devis{background:var(--gold);color:var(--navy);font-weight:800;font-size:1rem;padding:.7rem 1.3rem;border-radius:999px;box-shadow:0 12px 30px rgba(245,178,26,.4)}
+  .s-call{background:rgba(255,255,255,.12);color:#fff;font-weight:700;font-size:1rem;padding:.7rem 1.3rem;border-radius:999px;border:1px solid rgba(255,255,255,.25)}
+
+  .s-sec{padding:34px 20px;background:var(--navy)}
+  .s-sec .lab{color:var(--gold);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:.72rem;text-align:center;margin-bottom:18px}
+  .s-sec h2{color:#fff;text-align:center;font-weight:800;font-size:1.5rem;margin-bottom:22px}
+  .svcgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .svc{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:16px;opacity:0}
+  .svc .ic{width:40px;height:40px;border-radius:10px;background:rgba(245,178,26,.14);display:grid;place-items:center;margin-bottom:10px}
+  .svc .ic svg{width:22px;height:22px;stroke:var(--gold);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .svc b{color:#fff;font-size:1rem;display:block}.svc small{color:#9fb0c4;font-size:.8rem}
+
+  .why{display:flex;flex-direction:column;gap:12px}
+  .wi{display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:14px 16px;opacity:0}
+  .wi .ic{width:44px;height:44px;border-radius:50%;border:2px solid var(--gold);display:grid;place-items:center;flex:none}
+  .wi .ic svg{width:22px;height:22px;stroke:var(--gold);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+  .wi b{color:#fff;font-size:1.05rem}.wi small{color:#9fb0c4;font-size:.82rem;display:block}
+  .wi img{height:48px}
+
+  .zones{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+  .zone{color:#fff;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:999px;
+    padding:8px 14px;font-size:.9rem;font-weight:600;opacity:0}
+  .zone.gold{background:var(--gold);color:var(--navy);border-color:var(--gold)}
+
+  .s-real{height:300px;background:url(img/roof2.webp) center/cover;position:relative}
+  .s-real::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,var(--navy),transparent 60%)}
+
+  .s-final{padding:46px 24px 60px;text-align:center;background:var(--navy)}
+  .s-final img{height:70px;margin-bottom:16px;opacity:0}
+  .s-final h2{color:#fff;font-weight:900;font-size:1.9rem;line-height:1.15;opacity:0}
+  .s-final h2 .gold{color:var(--gold)}
+  .s-final .big{margin-top:18px;display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:var(--navy);
+    font-weight:800;font-size:1.3rem;padding:.85rem 1.6rem;border-radius:999px;box-shadow:0 14px 34px rgba(245,178,26,.45);opacity:0}
+  .s-final .m{margin-top:16px;color:var(--cream);font-size:.95rem;line-height:1.7;opacity:0}
+  .s-final .m b{color:#fff}
+
+  /* ripple de tap */
+  .ripple{position:absolute;width:44px;height:44px;border-radius:50%;background:rgba(245,178,26,.4);
+    border:2px solid var(--gold);z-index:38;opacity:0;transform:translate(-50%,-50%);pointer-events:none}
+
+  /* end card */
+  .endcard{position:absolute;inset:0;z-index:50;display:none;flex-direction:column;align-items:center;justify-content:center;
+    gap:1rem;text-align:center;padding:10vw;background:radial-gradient(circle at 50% 40%,#123653,#05101b 80%)}
+
+  .overlay{position:absolute;inset:0;z-index:60;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:1.4rem;text-align:center;padding:10vw;background:radial-gradient(circle at 50% 40%,#123653,#05101b 80%)}
+  .overlay img{width:min(55vw,220px)}
+  .btn{cursor:pointer;border:none;font-family:'Poppins';font-weight:800;font-size:1.1rem;padding:1rem 2.2rem;border-radius:999px;
+    background:var(--gold);color:var(--navy);box-shadow:0 16px 46px rgba(245,178,26,.45)}
+  .btn:active{transform:scale(.97)}
+  .btn .p{display:inline-block;margin-right:.5rem;animation:pulse 1.3s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  .hint{color:#9fb6c9;font-size:.85rem}
+  .replay{position:absolute;inset:0;z-index:61;display:none;align-items:center;justify-content:center;background:rgba(5,16,27,.55)}
+  .skip{position:absolute;bottom:12px;right:14px;z-index:62;color:#7f93a6;font-size:.74rem;cursor:pointer;
+    background:rgba(255,255,255,.08);padding:.35rem .8rem;border-radius:999px;border:1px solid rgba(255,255,255,.14);display:none}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="phone" id="phone">
+    <div class="screen" id="screen">
+      <!-- barre état -->
+      <div class="status" id="status"><span>14:02</span><span class="r">
+        <svg viewBox="0 0 18 12"><rect x="0" y="7" width="3" height="5" rx="1" fill="currentColor"/><rect x="5" y="4" width="3" height="8" rx="1" fill="currentColor"/><rect x="10" y="1" width="3" height="11" rx="1" fill="currentColor"/></svg>
+        <svg viewBox="0 0 18 12"><path d="M9 2C5.5 2 2.7 3.4 1 5.5l8 6 8-6C15.3 3.4 12.5 2 9 2z" fill="currentColor"/></svg>
+        <svg viewBox="0 0 24 12"><rect x="1" y="1" width="19" height="10" rx="2" fill="none" stroke="currentColor"/><rect x="2.5" y="2.5" width="14" height="7" rx="1" fill="currentColor"/><rect x="21" y="4" width="2" height="4" rx="1" fill="currentColor"/></svg>
+      </span></div>
+
+      <div class="mchrome" id="mchrome">
+        <div class="maddr"><svg viewBox="0 0 24 24" fill="none" stroke="#5f6368" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><span class="u" id="url">google.com</span></div>
+      </div>
+      <div class="loadbar" id="load"></div>
+
+      <div class="pageholder">
+        <!-- GOOGLE HOME -->
+        <div class="page ghome" id="pHome">
+          <div class="glogo"><span class="b">G</span><span class="r">o</span><span class="y">o</span><span class="b">g</span><span class="g">l</span><span class="r">e</span></div>
+          <div class="gpill">
+            <svg class="mag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            <span class="gq" id="gq"></span><span class="caret" id="caret"></span>
+            <svg class="mic" viewBox="0 0 24 24"><path fill="#4285F4" d="M12 15a3 3 0 0 0 3-3V7a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3z"/><path fill="#34A853" d="M17 12a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.9V22h2v-3.1A7 7 0 0 0 19 12h-2z"/></svg>
+            <div class="suggests" id="sugs">
+              <div class="sug"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><b>couvreur rge aubagne</b></div>
+              <div class="sug"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>couvreur rge aubagne devis</div>
+              <div class="sug"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>réparation toiture aubagne</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SERP -->
+        <div class="page serp" id="pSerp">
+          <div class="serpScroll" id="serpScroll">
+            <div class="sbar"><span class="back">←</span><div class="q"><svg class="mag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>couvreur rge aubagne</div></div>
+            <div class="stabs"><span class="on">Tous</span><span>Maps</span><span>Images</span><span>Actu</span></div>
+            <div class="mapstrip"><div class="road"></div>
+              <svg class="pin cph" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7z"/><circle cx="12" cy="9" r="2.5" fill="#fff"/></svg>
+              <svg class="pin" style="left:22%;top:70%" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7z"/></svg>
+              <svg class="pin" style="left:78%;top:66%" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7z"/></svg>
+            </div>
+            <div class="loc cph" id="cphResult">
+              <div class="nm">C.P.H — Contrôle Provence Habitat</div>
+              <div class="cat">Couvreur · Aubagne (13)</div>
+              <div class="atouts"><span class="tag g">RGE Qualibat ✓</span><span class="tag b">+10 ans</span><span class="tag o">Devis gratuit</span></div>
+              <div class="addr"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7z"/></svg>168 rue du Dirigeable, ZI Les Paluds, Aubagne</div>
+            </div>
+            <div class="loc"><div class="nm">Toiture du Garlaban</div><div class="cat">Couvreur · Aubagne</div></div>
+            <div class="organic">
+              <div class="fav"><div class="ic">CPH</div><div><div class="st">Contrôle Provence Habitat</div><div class="u">https://cph13.fr</div></div></div>
+              <h3>Couvreur RGE à Aubagne — Toiture, Façade, Démoussage</h3>
+              <p>Artisan certifié RGE Qualibat en Provence. Rénovation toiture, hydrofuge, isolation, démoussage. Devis gratuit dans les Bouches-du-Rhône et le Var.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- SITE -->
+        <div class="page site" id="pSite">
+          <div class="siteScroll" id="siteScroll">
+            <div class="s-hero" id="secHero">
+              <div class="s-nav"><img src="img/logo.png" alt="CPH"><span class="ph">📞 06 64 52 51 91</span></div>
+              <div class="s-herotext">
+                <div class="s-kick">Couvreur certifié RGE · Provence</div>
+                <h1>Rénover, entretenir &amp; <span class="gold">protéger votre habitat.</span></h1>
+                <div class="s-p">Toiture · Hydrofuge · Charpente · Isolation · Façade — du diagnostic au contrôle final.</div>
+                <div class="s-cta"><span class="s-devis">Devis gratuit →</span><span class="s-call">📞 Appeler</span></div>
+              </div>
+            </div>
+
+            <div class="s-sec" id="secSvc">
+              <div class="lab">Nos prestations</div>
+              <div class="svcgrid">
+                <div class="svc"><div class="ic"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg></div><b>Rénovation toiture</b><small>Tuile, zinc, étanchéité</small></div>
+                <div class="svc"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 2v6M12 22v-4M5 12H2M22 12h-3"/><circle cx="12" cy="12" r="4"/></svg></div><b>Hydrofuge</b><small>Protection &amp; imperméabilité</small></div>
+                <div class="svc"><div class="ic"><svg viewBox="0 0 24 24"><path d="M3 21V7l9-4 9 4v14M3 21h18M9 21v-6h6v6"/></svg></div><b>Charpente</b><small>Bois &amp; boiseries</small></div>
+                <div class="svc"><div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="1"/><path d="M3 9h18M8 4v14M13 4v14"/></svg></div><b>Photovoltaïque</b><small>Entretien panneaux</small></div>
+                <div class="svc"><div class="ic"><svg viewBox="0 0 24 24"><path d="M4 20V8l8-5 8 5v12"/><path d="M8 20v-6h8v6"/></svg></div><b>Isolation combles</b><small>Confort &amp; économies</small></div>
+                <div class="svc"><div class="ic"><svg viewBox="0 0 24 24"><path d="M3 21h18M6 21V8h12v13M9 12h.01M15 12h.01"/></svg></div><b>Façade &amp; démoussage</b><small>Nettoyage &amp; ravalement</small></div>
+              </div>
+            </div>
+
+            <div class="s-sec" id="secWhy">
+              <div class="lab">Pourquoi nous</div>
+              <div class="why">
+                <div class="wi"><img src="img/rge.png" alt="RGE Qualibat"><div><b>Certifié RGE Qualibat</b><small>Label de fiabilité reconnu</small></div></div>
+                <div class="wi"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></div><div><b>Assurance décennale</b><small>Travaux garantis 10 ans</small></div></div>
+                <div class="wi"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><div><b>+10 ans d'expérience</b><small>Un savoir-faire provençal</small></div></div>
+                <div class="wi"><div class="ic"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15l2 2 4-4"/></svg></div><div><b>Devis gratuit</b><small>Diagnostic sur place, sans engagement</small></div></div>
+              </div>
+            </div>
+
+            <div class="s-sec" id="secZones">
+              <div class="lab">Zone d'intervention</div>
+              <div class="zones">
+                <span class="zone gold">Aubagne</span><span class="zone">Marseille</span><span class="zone">Aix-en-Provence</span>
+                <span class="zone">La Ciotat</span><span class="zone">Salon</span><span class="zone">Martigues</span>
+                <span class="zone">Miramas</span><span class="zone">Toulon</span><span class="zone">La Seyne</span>
+              </div>
+            </div>
+
+            <div class="s-real" id="secReal"></div>
+
+            <div class="s-final" id="secFinal">
+              <img src="img/logo.png" alt="CPH">
+              <h2>Votre toit mérite<br>un <span class="gold">vrai pro.</span></h2>
+              <div class="big">Devis gratuit →</div>
+              <div class="m"><b>📞 06 64 52 51 91</b><br>contact@cph13.fr · cph13.fr<br>168 rue du Dirigeable, Aubagne (13)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- clavier -->
+      <div class="kbd" id="kbd">
+        <div class="krow"><span class="k" data-k="a">a</span><span class="k" data-k="z">z</span><span class="k" data-k="e">e</span><span class="k" data-k="r">r</span><span class="k" data-k="t">t</span><span class="k" data-k="y">y</span><span class="k" data-k="u">u</span><span class="k" data-k="i">i</span><span class="k" data-k="o">o</span><span class="k" data-k="p">p</span></div>
+        <div class="krow"><span class="k" data-k="q">q</span><span class="k" data-k="s">s</span><span class="k" data-k="d">d</span><span class="k" data-k="f">f</span><span class="k" data-k="g">g</span><span class="k" data-k="h">h</span><span class="k" data-k="j">j</span><span class="k" data-k="k">k</span><span class="k" data-k="l">l</span><span class="k" data-k="m">m</span></div>
+        <div class="krow"><span class="k kbtn">⇧</span><span class="k" data-k="w">w</span><span class="k" data-k="x">x</span><span class="k" data-k="c">c</span><span class="k" data-k="v">v</span><span class="k" data-k="b">b</span><span class="k" data-k="n">n</span><span class="k kbtn">⌫</span></div>
+        <div class="krow"><span class="k kbtn">123</span><span class="k kspace" id="kspace"></span><span class="k kbtn" id="kgo">↵</span></div>
+      </div>
+
+      <div class="ripple" id="ripple"></div>
+      <div class="endcard" id="endcard"></div>
+    </div>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <img src="img/logo.png" alt="CPH">
+    <button class="btn" id="startBtn"><span class="p">▶</span> Lancer</button>
+    <div class="hint">🔊 Son à fond — format vertical, avec bruitages</div>
+  </div>
+  <div class="replay" id="replayWrap"><button class="btn" id="replayBtn"><span class="p">↺</span> Revoir</button></div>
+  <div class="skip" id="skip">passer ⏭</div>
+
+  <!-- HOOK (au-dessus du téléphone) -->
+  <div class="hook" id="hook"><div class="em">🤔</div><h2>Vous cherchez un <span class="gold">couvreur</span> en Provence&nbsp;?</h2></div>
+</div>
+
+<script>
+/*──────── AUDIO ────────*/
+let AC,master,music;
+function initAudio(){AC=new(AudioContext||webkitAudioContext)();master=AC.createGain();master.gain.value=.9;master.connect(AC.destination);
+  music=AC.createGain();music.gain.value=.16;music.connect(master);}
+function nz(l){const n=AC.createBufferSource(),b=AC.createBuffer(1,AC.sampleRate*l,AC.sampleRate),d=b.getChannelData(0);
+  for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;n.buffer=b;return n;}
+function key(){if(!AC)return;const t=AC.currentTime,b=nz(.03),f=AC.createBiquadFilter();f.type='bandpass';f.frequency.value=1500+Math.random()*1200;f.Q.value=1.4;
+  const g=AC.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.22,t+.002);g.gain.exponentialRampToValueAtTime(.0001,t+.03);b.connect(f);f.connect(g);g.connect(master);b.start(t);
+  const o=AC.createOscillator(),og=AC.createGain();o.type='square';o.frequency.value=180+Math.random()*60;og.gain.setValueAtTime(.1,t);og.gain.exponentialRampToValueAtTime(.001,t+.025);o.connect(og);og.connect(master);o.start(t);o.stop(t+.03);}
+function space(){if(!AC)return;const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.type='square';o.frequency.value=120;g.gain.setValueAtTime(.18,t);g.gain.exponentialRampToValueAtTime(.001,t+.05);o.connect(g);g.connect(master);o.start(t);o.stop(t+.06);}
+function tap(){if(!AC)return;const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.setValueAtTime(600,t);o.frequency.exponentialRampToValueAtTime(300,t+.06);
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.35,t+.008);g.gain.exponentialRampToValueAtTime(.0001,t+.09);o.connect(g);g.connect(master);o.start(t);o.stop(t+.1);}
+function scroll(){if(!AC)return;const t=AC.currentTime,b=nz(.25),bp=AC.createBiquadFilter();bp.type='bandpass';bp.Q.value=2;
+  bp.frequency.setValueAtTime(1800,t);bp.frequency.exponentialRampToValueAtTime(700,t+.22);const g=AC.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.14,t+.05);g.gain.exponentialRampToValueAtTime(.0001,t+.25);b.connect(bp);bp.connect(g);g.connect(master);b.start(t);}
+function whoosh(){if(!AC)return;const t=AC.currentTime,b=nz(.5),bp=AC.createBiquadFilter();bp.type='bandpass';bp.Q.value=.9;
+  bp.frequency.setValueAtTime(250,t);bp.frequency.exponentialRampToValueAtTime(4200,t+.42);const g=AC.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.42,t+.1);g.gain.exponentialRampToValueAtTime(.0001,t+.5);b.connect(bp);bp.connect(g);g.connect(master);b.start(t);}
+function pop(){if(!AC)return;const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.setValueAtTime(400,t);o.frequency.exponentialRampToValueAtTime(900,t+.08);
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.38,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+.12);o.connect(g);g.connect(master);o.start(t);o.stop(t+.14);}
+function cling(){if(!AC)return;const t=AC.currentTime;[1318.5,1760,2637].forEach((f,i)=>{const o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.value=f;
+  g.gain.setValueAtTime(.0001,t+i*.02);g.gain.exponentialRampToValueAtTime(.28/(i+1),t+i*.02+.01);g.gain.exponentialRampToValueAtTime(.0001,t+i*.02+1.1);o.connect(g);g.connect(master);o.start(t+i*.02);o.stop(t+1.3);});}
+function ding(){if(!AC)return;const t=AC.currentTime;[880,1174].forEach((f,i)=>{const o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.value=f;
+  g.gain.setValueAtTime(.0001,t+i*.07);g.gain.exponentialRampToValueAtTime(.3,t+i*.07+.01);g.gain.exponentialRampToValueAtTime(.0001,t+i*.07+.5);o.connect(g);g.connect(master);o.start(t+i*.07);o.stop(t+.7);});}
+function tick(){if(!AC)return;const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.type='triangle';o.frequency.value=1200;g.gain.setValueAtTime(.2,t);g.gain.exponentialRampToValueAtTime(.001,t+.06);o.connect(g);g.connect(master);o.start(t);o.stop(t+.07);}
+
+/*──────── fond musical léger ────────*/
+let mStep=0,mNext=0,mTimer,TEMPO=84,SPB=60/84,STP=SPB/4;
+const MCH=[{t:[261.63,329.63,392]},{t:[246.94,293.66,392]},{t:[220,261.63,329.63]},{t:[174.61,220,261.63]}];
+let mpad=[];
+function mSetPad(c,t){mpad.forEach(o=>{try{o.stop(t+.2)}catch(e){}});mpad=[];const fl=AC.createBiquadFilter();fl.type='lowpass';fl.frequency.value=1000;
+  const g=AC.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.5,t+.5);fl.connect(g);g.connect(music);
+  c.t.forEach((f,i)=>{const o=AC.createOscillator();o.type=i===0?'sine':'triangle';o.frequency.value=f;o.connect(fl);o.start(t);mpad.push(o);});}
+function mPluck(t,f){const o=AC.createOscillator(),g=AC.createGain();o.type='triangle';o.frequency.value=f;
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.3,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+.5);o.connect(g);g.connect(music);o.start(t);o.stop(t+.6);}
+function mKick(t){const o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.setValueAtTime(120,t);o.frequency.exponentialRampToValueAtTime(45,t+.09);
+  g.gain.setValueAtTime(.6,t);g.gain.exponentialRampToValueAtTime(.0001,t+.25);o.connect(g);g.connect(music);o.start(t);o.stop(t+.27);}
+function mSched(s,t){const bar=(s/16)|0,ib=s%16,c=MCH[bar%4];if(ib===0)mSetPad(c,t);
+  if(ib%4===0)mPluck(t,c.t[(s/4|0)%3]*2);
+  if(bar>=2&&[0,8].includes(ib))mKick(t);}
+function mLoop(){while(mNext<AC.currentTime+.15){mSched(mStep,mNext);mNext+=STP;mStep++;}mTimer=setTimeout(mLoop,40);}
+function startMusic(){mStep=0;mNext=AC.currentTime+.1;mLoop();}
+function stopMusic(){clearTimeout(mTimer);if(music)music.gain.setTargetAtTime(.0001,AC.currentTime,.6);}
+
+/*──────── helpers UI ────────*/
+function rel(elId){const sc=document.getElementById('screen').getBoundingClientRect(),r=document.getElementById(elId).getBoundingClientRect();
+  return {x:r.left+r.width*.5-sc.left,y:r.top+r.height*.5-sc.top};}
+function tapAt(elId){const p=rel(elId);gsap.set('#ripple',{left:p.x,top:p.y,opacity:1,scale:.3});
+  gsap.to('#ripple',{scale:2.4,opacity:0,duration:.5,ease:'power2.out'});tap();}
+function flashKey(ch){let el;if(ch===' ')el=document.getElementById('kspace');else el=document.querySelector('.k[data-k="'+ch.toLowerCase()+'"]');
+  if(!el)return;el.classList.add('press');setTimeout(()=>el.classList.remove('press'),90);}
+function typeTween(elId,text,per){const el=document.getElementById(elId);el._last=-1;const o={i:0};
+  return gsap.to(o,{i:text.length,duration:text.length*per,ease:'none',onUpdate(){const n=Math.floor(o.i);if(n!==el._last){el._last=n;const ch=text[n-1];el.textContent=text.slice(0,n);if(ch===' '){space();flashKey(' ');}else if(ch){key();flashKey(ch);}}}});}
+function scrollToSec(scrollId,secId,dur){scroll();gsap.to('#'+scrollId,{y:()=>-document.getElementById(secId).offsetTop,duration:dur||1,ease:'power2.inOut'});}
+
+/*──────── TIMELINE ────────*/
+const Q='couvreur rge aubagne';let tl;
+function reset(){
+  gsap.set('#phone',{opacity:0,scale:.94});gsap.set('#hook',{opacity:0});
+  gsap.set('.page',{opacity:0});gsap.set('#kbd',{y:'110%'});gsap.set('#sugs',{opacity:0});
+  gsap.set('#caret',{opacity:1});gsap.set('#ripple',{opacity:0});gsap.set('#load',{width:0});
+  gsap.set('#serpScroll,#siteScroll',{y:0});document.getElementById('gq').textContent='';document.getElementById('url').textContent='google.com';
+  document.getElementById('status').classList.remove('dark');
+  gsap.set('.s-kick,.s-p',{opacity:0,y:14});gsap.set('.s-hero h1,.s-cta',{opacity:0,y:18});
+  gsap.set('.svc,.wi,.zone',{opacity:0,y:20});gsap.set('.s-final img,.s-final h2,.s-final .big,.s-final .m',{opacity:0,y:18});
+  document.getElementById('endcard').style.display='none';document.getElementById('replayWrap').style.display='none';
+}
+function build(){
+  reset();
+  tl=gsap.timeline({onComplete:()=>document.getElementById('replayWrap').style.display='flex'});
+
+  // HOOK
+  tl.call(whoosh,null,0).to('#hook',{opacity:1,duration:.5},0)
+    .to('#hook .h2,#hook h2',{y:0,duration:.1},0)
+    .to('#hook',{opacity:0,duration:.4},2.4).call(whoosh,null,2.4);
+
+  // Téléphone + Google home
+  tl.to('#phone',{opacity:1,scale:1,duration:.5,ease:'back.out(1.5)'},2.5).call(pop,null,2.5)
+    .to('#pHome',{opacity:1,duration:.3},2.9);
+
+  // tap barre + clavier monte
+  tl.call(()=>tapAt('gq'),null,3.2).to('#kbd',{y:'0%',duration:.4,ease:'power3.out'},3.35).call(pop,null,3.35);
+
+  // frappe
+  const tType=3.9;tl.add(typeTween('gq',Q,.12),tType);
+  const tEnd=tType+Q.length*.12;
+  tl.to('#sugs',{opacity:1,duration:.25},tEnd+.15).call(pop,null,tEnd+.15);
+
+  // valider
+  tl.call(()=>tapAt('kgo'),null,tEnd+.8).to('#caret',{opacity:0,duration:.1},tEnd+.8)
+    .to('#kbd',{y:'110%',duration:.35},tEnd+.9).call(whoosh,null,tEnd+1.0)
+    .to('#load',{width:'100%',duration:.5},tEnd+1.0).to('#pHome',{opacity:0,duration:.25},tEnd+1.05)
+    .call(()=>document.getElementById('url').textContent='google.com/search?q=couvreur+rge+aubagne',null,tEnd+1.1)
+    .set('#load',{width:0},tEnd+1.5).to('#pSerp',{opacity:1,duration:.3},tEnd+1.15).call(ding,null,tEnd+1.2);
+
+  // léger scroll SERP → centrer CPH
+  tl.call(()=>scrollToSec('serpScroll','cphResult',.8),null,tEnd+2.0);
+  // tap CPH
+  const tTap=tEnd+3.2;
+  tl.call(()=>tapAt('cphResult'),null,tTap)
+    .call(whoosh,null,tTap+.35).to('#load',{width:'100%',duration:.55},tTap+.35)
+    .call(()=>document.getElementById('url').textContent='cph13.fr',null,tTap+.4)
+    .to('#pSerp',{opacity:0,duration:.25},tTap+.4).set('#load',{width:0},tTap+.95)
+    .to('#pSite',{opacity:1,duration:.3},tTap+.55).call(cling,null,tTap+.6)
+    .call(()=>document.getElementById('status').classList.add('dark'),null,tTap+.55);
+
+  // révélation hero
+  const tH=tTap+.9;
+  tl.to('.s-kick',{opacity:1,y:0,duration:.5},tH+.1)
+    .to('.s-hero h1',{opacity:1,y:0,duration:.6,ease:'power3.out'},tH+.3)
+    .to('.s-p',{opacity:1,y:0,duration:.5},tH+.6)
+    .to('.s-cta',{opacity:1,y:0,duration:.5,ease:'back.out(1.6)'},tH+.9).call(pop,null,tH+.9);
+
+  // scroll services
+  let c=tH+2.2;
+  tl.call(()=>scrollToSec('siteScroll','secSvc',.9),null,c)
+    .to('.svc',{opacity:1,y:0,duration:.4,stagger:.12,ease:'back.out(1.5)'},c+.7)
+    .call(tick,null,c+.8).call(tick,null,c+1.0).call(tick,null,c+1.2).call(tick,null,c+1.4);
+
+  // scroll pourquoi
+  c+=2.8;
+  tl.call(()=>scrollToSec('siteScroll','secWhy',.9),null,c)
+    .to('.wi',{opacity:1,y:0,duration:.45,stagger:.18,ease:'power3.out'},c+.7)
+    .call(tick,null,c+.8).call(tick,null,c+1.1).call(tick,null,c+1.4).call(tick,null,c+1.7);
+
+  // scroll zones
+  c+=3.0;
+  tl.call(()=>scrollToSec('siteScroll','secZones',.9),null,c)
+    .to('.zone',{opacity:1,y:0,duration:.35,stagger:.07,ease:'back.out(1.6)'},c+.7);
+
+  // scroll réalisation
+  c+=2.4;
+  tl.call(()=>scrollToSec('siteScroll','secReal',.9),null,c).call(whoosh,null,c);
+
+  // scroll final + CTA
+  c+=2.2;
+  tl.call(()=>scrollToSec('siteScroll','secFinal',.9),null,c)
+    .to('.s-final img',{opacity:1,y:0,duration:.5},c+.7)
+    .to('.s-final h2',{opacity:1,y:0,duration:.6,ease:'power3.out'},c+.9)
+    .to('.s-final .big',{opacity:1,y:0,duration:.5,ease:'back.out(1.7)'},c+1.2).call(cling,null,c+1.25)
+    .to('.s-final .m',{opacity:1,y:0,duration:.6},c+1.5)
+    .to('.s-final .big',{scale:1.06,duration:.5,yoyo:true,repeat:3,ease:'sine.inOut'},c+1.9);
+}
+
+/*──────── contrôles ────────*/
+let on=false;
+function launch(){if(on)return;on=true;try{initAudio();startMusic();}catch(e){}
+  document.getElementById('overlay').style.display='none';document.getElementById('skip').style.display='block';build();}
+function replay(){document.getElementById('replayWrap').style.display='none';try{startMusic();}catch(e){}build();}
+document.getElementById('startBtn').onclick=launch;
+document.getElementById('replayBtn').onclick=replay;
+document.getElementById('skip').onclick=()=>{if(tl)tl.progress(.999);stopMusic();};
+reset();
+</script>
+</body>
+</html>
