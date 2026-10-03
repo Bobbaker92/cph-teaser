@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>CPH — De Google à votre devis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Arial&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+  :root{--navy:#0b304f;--gold:#f5b21a;--cream:#f4efe6}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden;background:#0a1826;
+    font-family:'Poppins',system-ui,sans-serif;-webkit-font-smoothing:antialiased;touch-action:none}
+  #stage{position:fixed;inset:0;display:grid;place-items:center;
+    background:radial-gradient(circle at 50% 30%,#12324e,#07131f 80%)}
+
+  /* fenêtre navigateur */
+  .window{position:relative;width:min(94vw,980px);height:min(86vh,640px);background:#fff;border-radius:16px;
+    overflow:hidden;box-shadow:0 40px 120px rgba(0,0,0,.6);opacity:0;transform:scale(.9)}
+  .chrome{height:48px;background:#e9edf1;display:flex;align-items:center;gap:8px;padding:0 14px;border-bottom:1px solid #dfe3e8}
+  .dot{width:12px;height:12px;border-radius:50%}
+  .d1{background:#ff5f57}.d2{background:#febc2e}.d3{background:#28c840}
+  .urlbar{flex:1;height:30px;margin-left:10px;background:#fff;border-radius:999px;display:flex;align-items:center;
+    gap:8px;padding:0 14px;color:#3c4043;font-size:14px;border:1px solid #dadce0;font-family:Arial,sans-serif}
+  .urlbar svg{width:14px;height:14px;flex:none}
+  .urltext{white-space:nowrap;overflow:hidden}
+
+  .viewport{position:absolute;top:48px;left:0;right:0;bottom:0;overflow:hidden;background:#fff}
+  .page{position:absolute;inset:0;opacity:0}
+
+  /* ---- Google home ---- */
+  .g-home{display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff;font-family:Arial,sans-serif}
+  .glogo{font-size:clamp(38px,7vw,64px);font-weight:500;letter-spacing:-2px;margin-bottom:28px}
+  .glogo .b{color:#4285F4}.glogo .r{color:#EA4335}.glogo .y{color:#FBBC05}.glogo .g{color:#34A853}
+  .gsearch{width:min(80%,560px);height:50px;border:1px solid #dfe1e5;border-radius:999px;display:flex;align-items:center;
+    padding:0 18px;gap:12px;box-shadow:0 1px 6px rgba(32,33,36,.1);position:relative;background:#fff}
+  .gsearch .mag{width:20px;height:20px;color:#9aa0a6;flex:none}
+  .gq{font-size:17px;color:#202124;white-space:nowrap;overflow:hidden}
+  .caret{display:inline-block;width:1.5px;height:22px;background:#4285F4;margin-left:1px;vertical-align:middle;animation:bl 1s step-end infinite}
+  @keyframes bl{50%{opacity:0}}
+  .mic{width:22px;height:22px;margin-left:auto;flex:none}
+  .suggests{position:absolute;top:56px;left:0;right:0;background:#fff;border-radius:22px;border:1px solid #e8eaed;
+    box-shadow:0 4px 14px rgba(32,33,36,.18);overflow:hidden;opacity:0;transform:translateY(-6px)}
+  .sug{display:flex;align-items:center;gap:14px;padding:10px 18px;font-size:16px;color:#202124}
+  .sug:first-child{background:#f1f3f4;font-weight:600}
+  .sug svg{width:16px;height:16px;color:#9aa0a6;flex:none}
+  .sug b{font-weight:700}
+
+  /* ---- SERP ---- */
+  .serp{background:#fff;font-family:Arial,sans-serif;padding:18px clamp(16px,5vw,120px);overflow:hidden}
+  .serp-top{display:flex;align-items:center;gap:18px;border-bottom:1px solid #ebebeb;padding-bottom:14px;margin-bottom:18px}
+  .serp-top .mini{font-size:24px;font-weight:500;letter-spacing:-1px}
+  .serp-bar{flex:1;max-width:460px;height:40px;border:1px solid #dfe1e5;border-radius:999px;display:flex;align-items:center;
+    padding:0 16px;gap:10px;box-shadow:0 1px 4px rgba(32,33,36,.08);color:#202124;font-size:15px}
+  .serp-bar .mag{width:16px;height:16px;color:#4285F4}
+  .tabs{display:flex;gap:22px;font-size:13px;color:#5f6368;margin-bottom:16px}
+  .tabs .t.on{color:#1a73e8;border-bottom:3px solid #1a73e8;padding-bottom:10px;font-weight:600}
+
+  .localpack{border:1px solid #e3e6e8;border-radius:12px;overflow:hidden;display:flex;margin-bottom:22px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  .map{width:38%;min-width:150px;position:relative;background:
+      linear-gradient(135deg,#e6efe3,#cfe3d6);background-color:#d9e8dc;overflow:hidden}
+  .map::before{content:"";position:absolute;inset:0;background:
+    repeating-linear-gradient(0deg,rgba(255,255,255,.5) 0 1px,transparent 1px 34px),
+    repeating-linear-gradient(90deg,rgba(255,255,255,.5) 0 1px,transparent 1px 34px);opacity:.6}
+  .map .road{position:absolute;height:7px;background:#fff;left:-10%;right:-10%;top:52%;transform:rotate(-8deg);box-shadow:0 18px 0 #fff}
+  .pin{position:absolute;left:50%;top:44%;transform:translate(-50%,-100%);width:30px;height:30px;color:#EA4335;filter:drop-shadow(0 3px 3px rgba(0,0,0,.3))}
+  .pin.cph{color:var(--gold);width:40px;height:40px}
+  .loclist{flex:1;padding:6px 0}
+  .loc{padding:12px 16px;border-bottom:1px solid #f1f1f1;position:relative}
+  .loc:last-child{border-bottom:none}
+  .loc.cph{background:#fffaf0}
+  .loc .nm{font-size:16px;color:#202124;font-weight:600}
+  .loc .rate{display:flex;align-items:center;gap:6px;font-size:13px;color:#70757a;margin:3px 0}
+  .stars{color:#fbbc05;letter-spacing:1px}
+  .loc .meta{font-size:13px;color:#5f6368}
+  .loc .badge{display:inline-block;margin-top:4px;font-size:11px;font-weight:700;color:#0b7a3b;background:#e6f4ea;padding:2px 8px;border-radius:6px}
+
+  .organic{max-width:620px}
+  .organic .fav{display:flex;align-items:center;gap:9px;margin-bottom:3px}
+  .organic .fav .ic{width:26px;height:26px;border-radius:50%;background:var(--navy);display:grid;place-items:center;color:#fff;font-weight:800;font-size:11px}
+  .organic .site{font-size:13px;color:#202124}.organic .url{font-size:12px;color:#5f6368}
+  .organic h3{color:#1a0dab;font-size:20px;font-weight:400;margin:2px 0 4px}
+  .organic p{color:#4d5156;font-size:14px;line-height:1.5}
+
+  /* ---- site CPH ---- */
+  .site{background:var(--navy);overflow:hidden}
+  .site .hero{position:absolute;inset:0;background:url(img/hero1.webp) center/cover;transform:scale(1.12)}
+  .site .hero::after{content:"";position:absolute;inset:0;
+    background:linear-gradient(90deg,rgba(7,24,40,.92) 0%,rgba(7,24,40,.6) 55%,rgba(7,24,40,.25) 100%)}
+  .site .nav{position:absolute;top:0;left:0;right:0;height:64px;display:flex;align-items:center;padding:0 clamp(16px,4vw,44px);z-index:3}
+  .site .nav img{height:40px}
+  .site .nav .ph{margin-left:auto;color:#fff;font-weight:700;font-size:clamp(13px,2.4vw,16px);background:rgba(255,255,255,.12);
+    padding:.5rem 1rem;border-radius:999px;border:1px solid rgba(255,255,255,.2)}
+  .site .wrap{position:absolute;z-index:3;left:clamp(20px,6vw,70px);top:50%;transform:translateY(-50%);max-width:min(78%,560px)}
+  .site .kick{color:var(--gold);font-weight:700;letter-spacing:.18em;text-transform:uppercase;font-size:clamp(.62rem,1.8vw,.9rem);opacity:0}
+  .site h1{color:#fff;font-weight:800;line-height:1.05;font-size:clamp(1.7rem,5.6vw,3.6rem);margin:.6rem 0;opacity:0}
+  .site h1 .gold{color:var(--gold)}
+  .site .p{color:var(--cream);font-size:clamp(.85rem,2.4vw,1.15rem);line-height:1.5;margin-bottom:1.4rem;opacity:0}
+  .site .btns{display:flex;gap:.8rem;flex-wrap:wrap;opacity:0}
+  .site .devis{background:var(--gold);color:var(--navy);font-weight:800;font-size:clamp(.9rem,2.6vw,1.2rem);
+    padding:.8rem 1.6rem;border-radius:999px;box-shadow:0 14px 34px rgba(245,178,26,.45)}
+  .site .call{background:rgba(255,255,255,.1);color:#fff;font-weight:700;font-size:clamp(.9rem,2.6vw,1.2rem);
+    padding:.8rem 1.6rem;border-radius:999px;border:1px solid rgba(255,255,255,.25)}
+  .site .rge{position:absolute;right:clamp(16px,4vw,44px);bottom:clamp(16px,4vw,40px);width:clamp(82px,15vw,120px);z-index:3;
+    opacity:0;filter:drop-shadow(0 10px 26px rgba(0,0,0,.5))}
+
+  /* curseur + barre de chargement */
+  .cursor{position:absolute;left:0;top:0;width:26px;height:26px;z-index:40;pointer-events:none;opacity:0;
+    transform:translate(0,0);filter:drop-shadow(0 2px 3px rgba(0,0,0,.4))}
+  .ring{position:absolute;width:10px;height:10px;border:3px solid var(--gold);border-radius:50%;z-index:39;
+    opacity:0;transform:translate(-50%,-50%)}
+  .loadbar{position:absolute;top:0;left:0;height:3px;width:0;background:var(--gold);z-index:45;box-shadow:0 0 8px var(--gold)}
+
+  .overlay{position:absolute;inset:0;z-index:60;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:1.5rem;text-align:center;padding:8vw;background:radial-gradient(circle at 50% 40%,#12324e,#06111c 80%)}
+  .overlay img{width:min(60vw,280px)}
+  .btn{cursor:pointer;border:none;font-family:'Poppins';font-weight:800;font-size:clamp(1rem,3.4vw,1.2rem);
+    padding:1rem 2.2rem;border-radius:999px;background:var(--gold);color:var(--navy);box-shadow:0 16px 46px rgba(245,178,26,.45)}
+  .btn:active{transform:scale(.97)}
+  .btn .p{display:inline-block;margin-right:.5rem;animation:pulse 1.3s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  .hint{color:#9fb6c9;font-size:.85rem}
+  .replay{position:absolute;inset:0;z-index:61;display:none;align-items:center;justify-content:center;background:rgba(6,17,28,.55)}
+  .skip{position:absolute;bottom:14px;right:16px;z-index:62;color:#7f93a6;font-size:.76rem;cursor:pointer;
+    background:rgba(255,255,255,.08);padding:.35rem .8rem;border-radius:999px;border:1px solid rgba(255,255,255,.14);display:none}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="window" id="win">
+    <div class="chrome">
+      <span class="dot d1"></span><span class="dot d2"></span><span class="dot d3"></span>
+      <div class="urlbar"><svg viewBox="0 0 24 24" fill="none" stroke="#5f6368" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>
+        <span class="urltext" id="url">google.com</span></div>
+    </div>
+    <div class="viewport">
+      <div class="loadbar" id="load"></div>
+
+      <!-- GOOGLE HOME -->
+      <div class="page g-home" id="pHome">
+        <div class="glogo"><span class="b">G</span><span class="r">o</span><span class="y">o</span><span class="b">g</span><span class="g">l</span><span class="r">e</span></div>
+        <div class="gsearch">
+          <svg class="mag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <span class="gq" id="gq"></span><span class="caret" id="caret"></span>
+          <svg class="mic" viewBox="0 0 24 24"><path fill="#4285F4" d="M12 15a3 3 0 0 0 3-3V7a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3z"/><path fill="#34A853" d="M17 12a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.9V22h2v-3.1A7 7 0 0 0 19 12h-2z"/></svg>
+          <div class="suggests" id="sugs">
+            <div class="sug"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><span><b>couvreur rge aubagne</b></span></div>
+            <div class="sug"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>couvreur rge aubagne avis</div>
+            <div class="sug"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>réparation toiture aubagne</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SERP -->
+      <div class="page serp" id="pSerp">
+        <div class="serp-top">
+          <span class="mini"><span style="color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#4285F4">g</span><span style="color:#34A853">l</span><span style="color:#EA4335">e</span></span>
+          <div class="serp-bar"><svg class="mag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>couvreur rge aubagne</div>
+        </div>
+        <div class="tabs"><span class="t on">Tous</span><span class="t">Maps</span><span class="t">Images</span><span class="t">Actualités</span></div>
+
+        <div class="localpack">
+          <div class="map"><div class="road"></div>
+            <svg class="pin cph" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7z"/><circle cx="12" cy="9" r="2.5" fill="#fff"/></svg>
+            <svg class="pin" style="left:24%;top:66%" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7z"/></svg>
+            <svg class="pin" style="left:74%;top:62%" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7z"/></svg>
+          </div>
+          <div class="loclist">
+            <div class="loc cph" id="cphResult">
+              <div class="nm">C.P.H — Contrôle Provence Habitat</div>
+              <div class="rate"><b style="color:#202124">4,9</b><span class="stars">★★★★★</span><span id="avisN">· avis Google</span></div>
+              <div class="meta">Couvreur · Aubagne (13) · Ouvert</div>
+              <span class="badge">RGE Qualibat ✓</span>
+            </div>
+            <div class="loc"><div class="nm">Toiture du Garlaban</div><div class="rate"><b style="color:#202124">4,2</b><span class="stars">★★★★</span><span>· couvreur</span></div><div class="meta">Aubagne</div></div>
+            <div class="loc"><div class="nm">Au Toit Provençal</div><div class="rate"><b style="color:#202124">3,9</b><span class="stars">★★★★</span><span>· couvreur</span></div><div class="meta">Aubagne</div></div>
+          </div>
+        </div>
+
+        <div class="organic" id="organic">
+          <div class="fav"><div class="ic">CPH</div><div><div class="site">Contrôle Provence Habitat</div><div class="url">https://cph13.fr</div></div></div>
+          <h3>Couvreur RGE à Aubagne — Toiture, Zinguerie, Démoussage | C.P.H</h3>
+          <p>Artisan couvreur certifié RGE Qualibat en Provence. Réparation de toiture, fuites &amp; sinistres, isolation, démoussage. <b>Devis gratuit</b> dans les Bouches-du-Rhône.</p>
+        </div>
+      </div>
+
+      <!-- SITE CPH -->
+      <div class="page site" id="pSite">
+        <div class="hero" id="siteHero"></div>
+        <div class="nav"><img src="img/logo.png" alt="CPH"><span class="ph">📞 06 64 52 51 91</span></div>
+        <div class="wrap">
+          <div class="kick" id="siteKick">Couvreur certifié RGE · Aubagne</div>
+          <h1 id="siteH1">Votre toit, <span class="gold">entre de bonnes mains.</span></h1>
+          <div class="p" id="siteP">Toiture · Zinguerie · Isolation · Démoussage — un chantier maîtrisé, du diagnostic au contrôle final.</div>
+          <div class="btns" id="siteBtns"><span class="devis">Devis gratuit →</span><span class="call">📞 Nous appeler</span></div>
+        </div>
+        <img class="rge" id="siteRge" src="img/rge.png" alt="RGE Qualibat">
+      </div>
+    </div>
+
+    <svg class="cursor" id="cursor" viewBox="0 0 24 24"><path fill="#fff" stroke="#333" stroke-width="1.2" d="M4 2l16 7-6.5 1.8L17 18l-3 1.3-3.3-7L4 16z"/></svg>
+    <div class="ring" id="ring"></div>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <img src="img/logo.png" alt="CPH">
+    <button class="btn" id="startBtn"><span class="p">▶</span> Lancer</button>
+    <div class="hint">🔊 Monte le son — bruitages inclus</div>
+  </div>
+  <div class="replay" id="replayWrap"><button class="btn" id="replayBtn"><span class="p">↺</span> Revoir</button></div>
+  <div class="skip" id="skip">passer ⏭</div>
+</div>
+
+<script>
+/*──────── SONS (Web Audio synthétisé) ────────*/
+let AC,master;
+function initAudio(){AC=new(AudioContext||webkitAudioContext)();master=AC.createGain();master.gain.value=.9;master.connect(AC.destination);}
+function nz(len){const n=AC.createBufferSource(),b=AC.createBuffer(1,AC.sampleRate*len,AC.sampleRate),d=b.getChannelData(0);
+  for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;n.buffer=b;return n;}
+function key(){if(!AC)return;const t=AC.currentTime;const b=nz(.03),f=AC.createBiquadFilter();
+  f.type='bandpass';f.frequency.value=1500+Math.random()*1200;f.Q.value=1.4;
+  const g=AC.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.22,t+.002);g.gain.exponentialRampToValueAtTime(.0001,t+.03);
+  b.connect(f);f.connect(g);g.connect(master);b.start(t);
+  const o=AC.createOscillator(),og=AC.createGain();o.type='square';o.frequency.value=180+Math.random()*60;
+  og.gain.setValueAtTime(.12,t);og.gain.exponentialRampToValueAtTime(.001,t+.025);o.connect(og);og.connect(master);o.start(t);o.stop(t+.03);}
+function spacebar(){if(!AC)return;const t=AC.currentTime;const o=AC.createOscillator(),g=AC.createGain();o.type='square';o.frequency.value=120;
+  g.gain.setValueAtTime(.2,t);g.gain.exponentialRampToValueAtTime(.001,t+.05);o.connect(g);g.connect(master);o.start(t);o.stop(t+.06);}
+function whoosh(){if(!AC)return;const t=AC.currentTime,b=nz(.5),bp=AC.createBiquadFilter();bp.type='bandpass';bp.Q.value=.9;
+  bp.frequency.setValueAtTime(250,t);bp.frequency.exponentialRampToValueAtTime(4200,t+.42);
+  const g=AC.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.45,t+.1);g.gain.exponentialRampToValueAtTime(.0001,t+.5);
+  b.connect(bp);bp.connect(g);g.connect(master);b.start(t);}
+function pop(){if(!AC)return;const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.type='sine';
+  o.frequency.setValueAtTime(400,t);o.frequency.exponentialRampToValueAtTime(900,t+.08);
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.4,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+.12);
+  o.connect(g);g.connect(master);o.start(t);o.stop(t+.14);}
+function click(){if(!AC)return;const t=AC.currentTime,b=nz(.02),hp=AC.createBiquadFilter();hp.type='highpass';hp.frequency.value=2500;
+  const g=AC.createGain();g.gain.setValueAtTime(.5,t);g.gain.exponentialRampToValueAtTime(.001,t+.03);b.connect(hp);hp.connect(g);g.connect(master);b.start(t);
+  const o=AC.createOscillator(),og=AC.createGain();o.type='sine';o.frequency.value=900;og.gain.setValueAtTime(.2,t);og.gain.exponentialRampToValueAtTime(.001,t+.04);o.connect(og);og.connect(master);o.start(t);o.stop(t+.05);}
+function cling(){if(!AC)return;const t=AC.currentTime;[1318.5,1760,2637].forEach((f,i)=>{const o=AC.createOscillator(),g=AC.createGain();
+  o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(.0001,t+i*.02);g.gain.exponentialRampToValueAtTime(.3/(i+1),t+i*.02+.01);
+  g.gain.exponentialRampToValueAtTime(.0001,t+i*.02+1.1);o.connect(g);g.connect(master);o.start(t+i*.02);o.stop(t+1.3);});}
+function enterk(){if(!AC)return;const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.type='square';o.frequency.value=140;
+  g.gain.setValueAtTime(.26,t);g.gain.exponentialRampToValueAtTime(.001,t+.07);o.connect(g);g.connect(master);o.start(t);o.stop(t+.08);}
+
+/*──────── helpers curseur ────────*/
+function moveCursorTo(elId,dur){const win=document.getElementById('win').getBoundingClientRect();
+  const r=document.getElementById(elId).getBoundingClientRect();
+  const x=r.left+r.width*.5-win.left,y=r.top+r.height*.5-win.top;
+  gsap.to('#cursor',{x,y,duration:dur,ease:'power2.inOut'});return {x,y};}
+function clickPulse(x,y){gsap.set('#ring',{x,y,opacity:1,scale:.2});gsap.to('#ring',{scale:3,opacity:0,duration:.45,ease:'power2.out'});
+  gsap.fromTo('#cursor',{scale:1},{scale:.82,duration:.09,yoyo:true,repeat:1});}
+
+/*──────── typewriter ────────*/
+function typeTween(elId,text,per){const el=document.getElementById(elId);el._last=-1;const o={i:0};
+  return gsap.to(o,{i:text.length,duration:text.length*per,ease:'none',onUpdate(){const n=Math.floor(o.i);
+    if(n!==el._last){el._last=n;el.textContent=text.slice(0,n);const ch=text[n-1];if(ch===' ')spacebar();else if(ch)key();}}});}
+
+/*──────── TIMELINE ────────*/
+const QUERY='couvreur rge aubagne';let tl;
+function reset(){
+  gsap.set('.page',{opacity:0});gsap.set('#pHome',{opacity:0});
+  gsap.set('#gq',{},0);document.getElementById('gq').textContent='';
+  gsap.set('#sugs',{opacity:0,y:-6});gsap.set('#caret',{opacity:1});
+  gsap.set('#cursor',{opacity:0,x:0,y:0,scale:1});gsap.set('#ring',{opacity:0});
+  gsap.set('#load',{width:0});document.getElementById('url').textContent='google.com';
+  gsap.set('#win',{opacity:0,scale:.9});
+  gsap.set('#siteKick,#siteH1,#siteP,#siteBtns,#siteRge',{opacity:0,y:18});
+  gsap.set('#siteHero',{scale:1.12});
+}
+function build(){
+  reset();
+  tl=gsap.timeline({onComplete:()=>document.getElementById('replayWrap').style.display='flex'});
+
+  // fenêtre + Google home
+  tl.to('#win',{opacity:1,scale:1,duration:.5,ease:'back.out(1.5)'},0).call(pop,null,0)
+    .to('#pHome',{opacity:1,duration:.3},.4);
+
+  // frappe de la recherche
+  tl.add(typeTween('gq',QUERY,.11),1.0);
+  const tEnd=1.0+QUERY.length*.11;
+  // suggestions
+  tl.to('#sugs',{opacity:1,y:0,duration:.25,ease:'power2.out'},tEnd+.15).call(pop,null,tEnd+.15);
+  // "Entrée" → whoosh → SERP
+  tl.call(enterk,null,tEnd+.7).to('#caret',{opacity:0,duration:.1},tEnd+.7)
+    .call(whoosh,null,tEnd+.8)
+    .to('#load',{width:'100%',duration:.5,ease:'power1.inOut'},tEnd+.8)
+    .to('#pHome',{opacity:0,duration:.25},tEnd+.85)
+    .call(()=>document.getElementById('url').textContent='google.com/search?q=couvreur+rge+aubagne',null,tEnd+.9)
+    .set('#load',{width:0},tEnd+1.35)
+    .to('#pSerp',{opacity:1,duration:.3},tEnd+.95)
+    .call(cling,null,tEnd+1.0);
+
+  // curseur arrive et clique CPH
+  const tCur=tEnd+1.6;
+  tl.to('#cursor',{opacity:1,duration:.2},tCur)
+    .call(()=>moveCursorTo('cphResult',.9),null,tCur+.1)
+    .call(()=>{const win=document.getElementById('win').getBoundingClientRect();const r=document.getElementById('cphResult').getBoundingClientRect();
+      clickPulse(r.left+r.width*.5-win.left,r.top+r.height*.5-win.top);click();},null,tCur+1.15)
+    // navigation vers le site
+    .call(whoosh,null,tCur+1.45)
+    .to('#load',{width:'100%',duration:.55,ease:'power1.inOut'},tCur+1.45)
+    .call(()=>document.getElementById('url').textContent='cph13.fr',null,tCur+1.5)
+    .to('#pSerp',{opacity:0,duration:.25},tCur+1.5)
+    .to('#cursor',{opacity:0,duration:.2},tCur+1.5)
+    .set('#load',{width:0},tCur+2.05)
+    .to('#pSite',{opacity:1,duration:.3},tCur+1.7)
+    .call(cling,null,tCur+1.75);
+
+  // révélation du site (Ken Burns + contenu)
+  const tSite=tCur+1.8;
+  tl.to('#siteHero',{scale:1.0,duration:4,ease:'none'},tSite)
+    .to('#siteKick',{opacity:1,y:0,duration:.5},tSite+.2)
+    .to('#siteH1',{opacity:1,y:0,duration:.6,ease:'power3.out'},tSite+.4)
+    .to('#siteP',{opacity:1,y:0,duration:.6},tSite+.7)
+    .to('#siteBtns',{opacity:1,y:0,duration:.6,ease:'back.out(1.6)'},tSite+1.0).call(pop,null,tSite+1.0)
+    .to('#siteRge',{opacity:1,y:0,duration:.6,ease:'back.out(1.8)'},tSite+1.3).call(cling,null,tSite+1.35)
+    .to('.site .devis',{scale:1.06,duration:.5,yoyo:true,repeat:3,ease:'sine.inOut'},tSite+1.7);
+}
+
+/*──────── contrôles ────────*/
+let on=false;
+function launch(){if(on)return;on=true;try{initAudio();}catch(e){}
+  document.getElementById('overlay').style.display='none';document.getElementById('skip').style.display='block';build();}
+function replay(){document.getElementById('replayWrap').style.display='none';build();}
+document.getElementById('startBtn').onclick=launch;
+document.getElementById('replayBtn').onclick=replay;
+document.getElementById('skip').onclick=()=>{if(tl)tl.progress(.999);};
+reset();
+</script>
+</body>
+</html>
