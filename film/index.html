@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>CPH — Film publicitaire (voix-off)</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--navy:#0b304f;--gold:#f5b21a}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Poppins',system-ui,sans-serif;background:radial-gradient(circle at 50% 18%,#123653,#05101b 80%);color:#eef3ff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:30px 16px 70px}
+  h1{font-weight:800;font-size:clamp(1.3rem,5vw,2rem);text-align:center} h1 b{color:var(--gold)}
+  .sub{color:#9fb6c9;text-align:center;margin:8px 0 28px;font-size:.95rem}
+  .card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:16px;margin-bottom:24px;width:100%;max-width:900px}
+  .card h2{font-size:1.05rem;margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .tag{font-size:.7rem;font-weight:700;color:var(--navy);background:var(--gold);padding:3px 10px;border-radius:999px}
+  video{width:100%;border-radius:12px;background:#000;display:block}
+  .vert video,.sq video{max-height:80vh;width:auto;margin:0 auto}
+  .dl{display:inline-flex;margin-top:12px;background:var(--gold);color:var(--navy);font-weight:800;text-decoration:none;padding:.7rem 1.3rem;border-radius:999px}
+</style>
+</head>
+<body>
+  <h1>Film publicitaire <b>Contrôle Provence Habitat</b></h1>
+  <div class="sub">Voix-off · 46 s · animations synchronisées sur la voix · sous-titres 🔊</div>
+  <div class="card"><h2>Paysage 16:9 <span class="tag">1920×1080</span></h2>
+    <video src="cph-film.mp4?v=1" controls playsinline preload="metadata"></video><a class="dl" href="cph-film.mp4?v=1" download>Télécharger</a></div>
+  <div class="card vert"><h2>Vertical 9:16 <span class="tag">Reels · TikTok · Shorts</span></h2>
+    <video src="cph-film-vertical.mp4?v=1" controls playsinline preload="metadata"></video><a class="dl" href="cph-film-vertical.mp4?v=1" download>Télécharger</a></div>
+  <div class="card sq"><h2>Carré 1:1 <span class="tag">Feed Insta / Facebook</span></h2>
+    <video src="cph-film-square.mp4?v=1" controls playsinline preload="metadata"></video><a class="dl" href="cph-film-square.mp4?v=1" download>Télécharger</a></div>
+</body>
+</html>
